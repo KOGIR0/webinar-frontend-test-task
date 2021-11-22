@@ -1,4 +1,3 @@
-import React from "react";
 import Container from "@material-ui/core/Container";
 import Typography from "@material-ui/core/Typography";
 import { createMuiTheme } from "@material-ui/core/styles";
@@ -31,7 +30,6 @@ function App() {
 
 function Content() {
   const { dispatch } = useTodoItems();
-  const { todoItems } = useTodoItems();
 
   const onDragEnd = (result: any) => {
     const { destination, source } = result;
@@ -47,11 +45,10 @@ function Content() {
       return;
     }
 
-    const draggedItem = todoItems[source.index];
-    todoItems.splice(source.index, 1);
-    todoItems.splice(destination.index, 0, draggedItem);
-
-    dispatch({ type: "update", data: { todoItems: todoItems } });
+    dispatch({
+      type: "move",
+      data: { source: source.index, destination: destination.index },
+    });
   };
 
   return (
