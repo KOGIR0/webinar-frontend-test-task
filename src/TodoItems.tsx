@@ -11,6 +11,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import classnames from 'classnames';
 import { motion } from 'framer-motion';
 import { TodoItem, useTodoItems } from './TodoItemsContext';
+import { Droppable, Draggable } from 'react-beautiful-dnd';
 
 const spring = {
     type: 'spring',
@@ -44,13 +45,29 @@ export const TodoItemsList = function () {
     });
 
     return (
-        <ul className={classes.root}>
-            {sortedItems.map((item) => (
-                <motion.li key={item.id} transition={spring} layout={true}>
-                    <TodoItemCard item={item} />
-                </motion.li>
-            ))}
-        </ul>
+        <Droppable droppableId='1'>
+            {(provided) => (
+            <ul className={classes.root}
+            {...provided.droppableProps}
+            ref={provided.innerRef}>
+                {sortedItems.map((item, index) => (
+                    <motion.li key={item.id} transition={spring} layout={true}>
+                        <Draggable draggableId={item.id} index={index}>
+                        {(provided) => (
+                            <div
+                            {...provided.dragHandleProps}
+                            {...provided.draggableProps}
+                            ref={provided.innerRef}>
+                                <TodoItemCard item={item}/>
+                            </div>
+                        )}
+                        </Draggable>
+                    </motion.li>
+                ))}
+                {provided.placeholder}
+            </ul>
+            )}
+        </Droppable>
     );
 };
 
