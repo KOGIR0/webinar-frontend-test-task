@@ -4,7 +4,7 @@ import Typography from "@material-ui/core/Typography";
 import { createMuiTheme } from "@material-ui/core/styles";
 import { ThemeProvider } from "@material-ui/styles";
 import { TodoItemsList } from "./TodoItems";
-import { TodoItemsContextProvider, useTodoItems } from "./TodoItemsContext";
+import { TodoItemsContextProvider, useTodoItems } from "../TodoItemsContext";
 import TodoItemForm from "./TodoItemForm";
 import { DragDropContext } from "react-beautiful-dnd";
 
