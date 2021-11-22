@@ -5,6 +5,7 @@ import CardContent from "@material-ui/core/CardContent";
 import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import Checkbox from "@material-ui/core/Checkbox";
+import CreateIcon from "@material-ui/icons/Create";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { makeStyles } from "@material-ui/core/styles";
@@ -12,6 +13,19 @@ import classnames from "classnames";
 import { motion } from "framer-motion";
 import { TodoItem, useTodoItems } from "../TodoItemsContext";
 import { Droppable, Draggable } from "react-beautiful-dnd";
+import ReactModal from "react-modal";
+import { useForm, Controller } from "react-hook-form";
+import TextField from "@material-ui/core/TextField";
+import Button from "@material-ui/core/Button";
+import { useState } from "react";
+
+ReactModal.setAppElement("#root");
+
+const useInputStyles = makeStyles(() => ({
+  root: {
+    marginBottom: 24,
+  },
+}));
 
 const spring = {
   type: "spring",
@@ -88,6 +102,7 @@ const useTodoItemCardStyles = makeStyles({
 export const TodoItemCard = function ({ item }: { item: TodoItem }) {
   const classes = useTodoItemCardStyles();
   const { dispatch } = useTodoItems();
+  const [isChanging, setisChanging] = useState(false);
 
   const handleDelete = useCallback(
     () => dispatch({ type: "delete", data: { id: item.id } }),
@@ -111,9 +126,19 @@ export const TodoItemCard = function ({ item }: { item: TodoItem }) {
     >
       <CardHeader
         action={
-          <IconButton aria-label="delete" onClick={handleDelete}>
-            <DeleteIcon />
-          </IconButton>
+          <div>
+            <IconButton
+              aria-label="change"
+              onClick={() => {
+                setisChanging(true);
+              }}
+            >
+              <CreateIcon />
+            </IconButton>
+            <IconButton aria-label="delete" onClick={handleDelete}>
+              <DeleteIcon />
+            </IconButton>
+          </div>
         }
         title={
           <FormControlLabel
@@ -136,6 +161,63 @@ export const TodoItemCard = function ({ item }: { item: TodoItem }) {
           </Typography>
         </CardContent>
       ) : null}
+
+      <ReactModal isOpen={isChanging}>
+        <TodoItemChangeFrom item={item} submit={() => setisChanging(false)} />
+      </ReactModal>
     </Card>
   );
 };
+
+function TodoItemChangeFrom({
+  item,
+  submit,
+}: {
+  item: TodoItem;
+  submit: Function;
+}) {
+  const classes = useInputStyles();
+  const { dispatch } = useTodoItems();
+  const { control, handleSubmit } = useForm();
+
+  return (
+    <form
+      onSubmit={handleSubmit((formData) => {
+        submit();
+        dispatch({ type: "update", data: { id: item.id, newData: formData } });
+      })}
+    >
+      <Controller
+        name="title"
+        control={control}
+        defaultValue={item.title}
+        rules={{ required: true }}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="TODO"
+            fullWidth={true}
+            className={classes.root}
+          />
+        )}
+      />
+      <Controller
+        name="details"
+        control={control}
+        defaultValue={item.details}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="Details"
+            fullWidth={true}
+            multiline={true}
+            className={classes.root}
+          />
+        )}
+      />
+      <Button variant="contained" color="primary" type="submit">
+        Update
+      </Button>
+    </form>
+  );
+}

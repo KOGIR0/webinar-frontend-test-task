@@ -18,7 +18,7 @@ interface TodoItemsState {
 }
 
 interface TodoItemsAction {
-  type: "loadState" | "add" | "move" | "delete" | "toggleDone";
+  type: "loadState" | "add" | "move" | "delete" | "toggleDone" | "update";
   data: any;
 }
 
@@ -91,13 +91,16 @@ function todoItemsReducer(state: TodoItemsState, action: TodoItemsAction) {
       const newItems = state.todoItems.filter(
         (item, index) => index !== action.data.source
       );
+      newItems.splice(action.data.destination, 0, draggedItem);
+      if (
+        (draggedItem.done && !state.todoItems[action.data.destination].done) ||
+        (!draggedItem.done && state.todoItems[action.data.destination].done)
+      ) {
+        return { ...state };
+      }
       return {
         ...state,
-        todoItems: [
-          ...newItems.splice(0, action.data.destination),
-          draggedItem,
-          ...newItems.splice(action.data.destination),
-        ],
+        todoItems: newItems,
       };
     case "delete":
       return {
@@ -117,6 +120,15 @@ function todoItemsReducer(state: TodoItemsState, action: TodoItemsAction) {
           { ...item, done: !item.done },
           ...state.todoItems.slice(itemIndex + 1),
         ],
+      };
+    case "update":
+      const updateItemIndex = state.todoItems.findIndex(
+        ({ id }) => id === action.data.id
+      );
+      state.todoItems[updateItemIndex].title = action.data.newData.title;
+      state.todoItems[updateItemIndex].details = action.data.newData.details;
+      return {
+        ...state,
       };
     default:
       throw new Error();
